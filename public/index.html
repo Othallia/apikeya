@@ -29,3 +29,38 @@
         --input-bg: #0a192f;
         --copy-btn-bg: #004a99;
       }
+body {
+        font-family: "Poppins", sans-serif;
+        /* Gradasi background body PENTING untuk glassmorphism */
+        background: linear-gradient(
+          135deg,
+          #0a192f,
+          #1a2b4c
+        );
+        color: var(--text-light);
+        display: flex;
+        /* Mengubah flex-direction agar footer bisa di bawah */
+        flex-direction: column; 
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 1.5rem;
+        box-sizing: border-box;
+      }
+
+      .container {
+        /* --- KUNCI EFEK KACA BURAM (Glassmorphism) --- */
+        background: rgba(26, 43, 76, 0.6); /* Transparansi 60% */
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color-transparent); /* Border transparan */
+        /* ------------------------------------------- */
+        
+        padding: 2.5rem 3rem;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px var(--shadow-color);
+        width: 100%;
+        max-width: 650px;
+        text-align: center;
+        animation: fadeIn 0.8s ease-out;
