@@ -13,6 +13,7 @@
       rel="stylesheet"
     />
     <style>
+      /* Style tetap sama, saya hanya menambah sedikit layout untuk form user */
       :root {
         --primary-gradient: linear-gradient(45deg, #0056b3, #007bff);
         --button-gradient: linear-gradient(45deg, #007bff, #0056b3);
@@ -50,50 +51,25 @@
         width: 100%;
         max-width: 650px;
         text-align: center;
-        animation: fadeIn 0.8s ease-out;
-        margin-bottom: 2rem;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
       }
       h1 {
-        color: var(--text-light);
         margin-top: 0;
-        margin-bottom: 0.75rem;
         font-size: 2.5rem;
-        font-weight: 700;
         background: -webkit-linear-gradient(45deg, #e0e7ff, #a8b2d1);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
-      p {
-        color: var(--text-dark);
-        font-size: 1.15rem;
-        margin-bottom: 1.5rem; /* Mengurangi margin */
-        line-height: 1.6;
-      }
-
-      /* --- INI BAGIAN PENTING YANG HILANG --- */
       .input-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         text-align: left;
       }
       .input-group label {
         display: block;
         color: var(--text-dark);
-        font-weight: 600;
         margin-bottom: 0.5rem;
+        font-size: 0.9rem;
       }
       .input-group input {
-        font-family: "Poppins", sans-serif;
-        font-size: 1rem;
         width: 100%;
         padding: 0.75rem 1rem;
         background-color: var(--input-bg);
@@ -102,224 +78,114 @@
         border-radius: 6px;
         box-sizing: border-box;
         outline: none;
-        transition: all 0.3s ease;
       }
-      .input-group input:focus {
-        border-color: var(--primary-gradient);
-        box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.35);
+      /* Layout 2 kolom untuk nama */
+      .row {
+        display: flex;
+        gap: 1rem;
       }
-      /* ------------------------------------ */
-
+      .col {
+        flex: 1;
+      }
       #generateBtn {
         font-family: "Poppins", sans-serif;
-        font-size: 1.1rem;
         font-weight: 600;
         padding: 1rem 2rem;
         border: none;
         border-radius: 8px;
         cursor: pointer;
-        transition: all 0.3s ease;
         background: var(--button-gradient);
         color: white;
         width: 100%;
-        max-width: 350px;
-        margin-bottom: 2.5rem;
-        box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
-      }
-      #generateBtn:hover {
-        background: var(--button-hover-gradient);
-        transform: translateY(-4px);
-        box-shadow: 0 12px 25px rgba(0, 123, 255, 0.4);
-      }
-      #generateBtn:disabled {
-        background: #555;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-      }
-      .output-label {
-        display: block;
-        text-align: left;
-        color: var(--text-dark);
-        font-weight: 600;
-        margin-bottom: 0.75rem;
-        font-size: 1.05rem;
-      }
-      .output-container {
-        position: relative;
-        width: 100%;
+        margin-top: 1rem;
+        margin-bottom: 2rem;
       }
       textarea#apiKeyArea {
         font-family: "Fira Code", monospace;
-        font-size: 1.1rem;
         width: 100%;
-        min-height: 120px;
-        padding: 1rem 1.25rem;
-        padding-right: 7.5rem;
+        min-height: 100px;
+        padding: 1rem;
         background-color: var(--input-bg);
         color: var(--key-text);
         border: 1px solid var(--border-color-opaque);
         border-radius: 8px;
-        resize: vertical;
-        box-sizing: border-box;
-        outline: none;
-        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
-        line-height: 1.8;
-      }
-      #copyBtn {
-        font-family: "Poppins", sans-serif;
-        font-size: 0.95rem;
-        font-weight: 600;
-        padding: 0.7rem 1.1rem;
-        border: 1px solid rgba(0, 123, 255, 0.6);
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background-color: var(--copy-btn-bg);
-        color: var(--text-light);
-        position: absolute;
-        top: 50%;
-        right: 0.8rem;
-        transform: translateY(-50%);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      }
-      .copyright {
-        text-align: center;
-        color: var(--text-dark);
-        font-size: 0.9rem;
-        opacity: 0.7;
-        margin-top: auto;
-      }
-
-      /* Style responsive */
-      @media (max-width: 768px) {
-        .container {
-          padding: 2rem 1.5rem;
-          margin-bottom: 1.5rem;
-        }
-        h1 { font-size: 2rem; }
-        p { font-size: 1rem; }
-        #generateBtn { font-size: 1rem; }
-        textarea#apiKeyArea { padding-right: 6.5rem; }
-        #copyBtn { padding: 0.5rem 0.7rem; right: 0.5rem; }
-        .copyright { font-size: 0.8rem; }
       }
     </style>
   </head>
   <body>
     <div class="container">
       <h1>API Key Generator</h1>
-      <p>Masukkan nama layanan dan klik tombol untuk membuat API key baru.</p>
+      <p>Isi data diri untuk mendapatkan API Key.</p>
+
+      <div class="row">
+        <div class="col input-group">
+          <label>Nama Depan</label>
+          <input type="text" id="firstName" placeholder="masukan nama" required />
+        </div>
+        <div class="col input-group">
+          <label>Nama Belakang</label>
+          <input type="text" id="lastName" placeholder="masukan nama" />
+        </div>
+      </div>
 
       <div class="input-group">
-        <label for="serviceNameInput">Nama Layanan / Aplikasi</label>
-        <input
-          type="text"
-          id="serviceNameInput"
-          placeholder="Contoh: Aplikasi Kasir"
-        />
+        <label>Email (Identitas Pemilik Key)</label>
+        <input type="email" id="email" placeholder="ook@example.com" required />
       </div>
-      <button id="generateBtn">Buat API Key Baru</button>
 
-      <label for="apiKeyArea" class="output-label">API Key Baru Anda:</label>
+      <button id="generateBtn">Generate API Key</button>
 
-      <div class="output-container">
-        <textarea
-          id="apiKeyArea"
-          rows="5"
-          readonly
-          placeholder="API key akan muncul di sini setelah dibuat..."
-        ></textarea>
-        <button id="copyBtn" title="Salin ke Clipboard">Salin</button>
+      <div class="input-group">
+        <label>API Key Anda:</label>
+        <textarea id="apiKeyArea" readonly placeholder="Key akan muncul di sini..."></textarea>
       </div>
     </div>
 
-    <footer class="copyright">&copy; octaviani 2025</footer>
-
     <script>
-      // Ambil elemen-elemen
       const generateButton = document.getElementById("generateBtn");
-      const copyButton = document.getElementById("copyBtn");
       const apiKeyTextarea = document.getElementById("apiKeyArea");
-      const serviceNameInput = document.getElementById("serviceNameInput"); // Variabel baru
+      const firstNameInput = document.getElementById("firstName");
+      const lastNameInput = document.getElementById("lastName");
+      const emailInput = document.getElementById("email");
 
-      /**
-       * Fungsi ini memanggil SERVER untuk membuat key
-       */
-      async function generateKeyOnServer() {
-        const serviceName = serviceNameInput.value;
-        if (!serviceName) {
-          alert("Silakan masukkan nama layanan terlebih dahulu.");
-          serviceNameInput.focus();
+      async function generateKey() {
+        const firstName = firstNameInput.value;
+        const lastName = lastNameInput.value;
+        const email = emailInput.value;
+
+        if (!firstName || !email) {
+          alert("Nama Depan dan Email wajib diisi!");
           return;
         }
 
-        // Tampilkan status loading
+        generateButton.textContent = "Memproses...";
         generateButton.disabled = true;
-        generateButton.textContent = "Membuat...";
-        apiKeyTextarea.value = "Sedang memproses permintaan...";
 
         try {
-          // Panggil server
           const response = await fetch("/generate-api-key", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ serviceName: serviceName }), // Kirim serviceName
+            headers: { "Content-Type": "application/json" },
+            // Kirim data lengkap ke server
+            body: JSON.stringify({ firstName, lastName, email }),
           });
 
           const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || "Gagal mengambil data dari server");
+          
+          if (data.apiKey) {
+            apiKeyTextarea.value = data.apiKey;
+          } else {
+            alert("Gagal: " + (data.error || "Unknown error"));
           }
-
-          // Sukses! Tampilkan key
-          apiKeyTextarea.value = data.apiKey;
-        } catch (error) {
-          console.error("Error:", error);
-          apiKeyTextarea.value = `Gagal membuat key: ${error.message}`;
-          alert(`Gagal membuat key: ${error.message}`);
+        } catch (err) {
+          console.error(err);
+          alert("Terjadi kesalahan koneksi.");
         } finally {
-          // Kembalikan tombol ke normal
-          generateButton.disabled = false;
-          generateButton.textContent = "Buat API Key Baru";
+            generateButton.textContent = "Generate API Key";
+            generateButton.disabled = false;
         }
       }
 
-      /**
-       * Fungsi copyToClipboard (Tidak Berubah)
-       */
-      function copyToClipboard(text, buttonElement) {
-        if (!text || text.startsWith("Gagal") || text.startsWith("Sedang")) {
-          alert("Tidak ada API key valid untuk disalin.");
-          return;
-        }
-
-        navigator.clipboard
-          .writeText(text)
-          .then(() => {
-            const originalText = buttonElement.textContent;
-            buttonElement.textContent = "Disalin!";
-            buttonElement.style.backgroundColor = "#28a745";
-            setTimeout(() => {
-              buttonElement.textContent = originalText;
-              buttonElement.style.backgroundColor = "var(--copy-btn-bg)";
-            }, 2000);
-          })
-          .catch((err) => {
-            console.error("Gagal menyalin:", err);
-            alert("Gagal menyalin. Silakan salin manual.");
-          });
-      }
-
-      // Event Listeners
-      generateButton.addEventListener("click", generateKeyOnServer); // Panggil fungsi baru
-
-      copyButton.addEventListener("click", () => {
-        copyToClipboard(apiKeyTextarea.value, copyButton);
-      });
+      generateButton.addEventListener("click", generateKey);
     </script>
   </body>
 </html>

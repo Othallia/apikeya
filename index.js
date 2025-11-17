@@ -1,6 +1,5 @@
 const express = require("express");
 const crypto = require("crypto");
-// --- INI YANG BARU (1/3): Ada /promise ---
 const mysql = require("mysql2/promise");
 
 const app = express();
@@ -10,19 +9,19 @@ const port = 3000;
 app.use(express.json());
 app.use(express.static("public"));
 
-// --- INI YANG BARU (2/3): Menggunakan createPool ---
+// --- KONEKSI DATABASE ---
 const dbPool = mysql.createPool({
   host: "localhost",
   user: "root",
-  password: "ookwlan24", // Password kamu
-  database: "api_key",
-  port: 3307, // Port custom kamu
+  password: "ookwlan24", 
+  database: "api_key",   
+  port: 3307,            
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
 });
 
-// --- INI YANG BARU (3/3): Tes koneksi cara async ---
+// Tes koneksi
 (async () => {
   try {
     await dbPool.query("SELECT 1");
@@ -31,37 +30,52 @@ const dbPool = mysql.createPool({
     console.error("❌ GAGAL terhubung ke database:", err.message);
   }
 })();
-// -----------------------------------------------------------------
 
+// -----------------------------------------------------------------
+// 1. GENERATE API KEY
+// -----------------------------------------------------------------
 app.post("/generate-api-key", async (req, res) => {
   try {
-    const { serviceName } = req.body;
-    if (!serviceName) {
-      return res
-        .status(400)
-        .json({ error: "Nama layanan (serviceName) diperlukan" });
+    const { firstName, lastName, email } = req.body;
+
+    if (!email || !firstName) {
+      return res.status(400).json({ error: "Nama Depan dan Email wajib diisi!" });
     }
 
-    const key = "sk_live_" + crypto.randomBytes(32).toString("hex");
-    console.log(`Membuat key untuk: ${serviceName}`);
+    console.log(`Request API Key untuk email: ${email}`);
 
-    // Menggunakan dbPool
+    // Cek User
+    const [users] = await dbPool.query("SELECT id FROM users WHERE email = ?", [email]);
+    let userId;
+
+    if (users.length > 0) {
+      userId = users[0].id;
+    } else {
+      const [result] = await dbPool.query(
+        "INSERT INTO users (first_name, last_name, email) VALUES (?, ?, ?)",
+        [firstName, lastName, email]
+      );
+      userId = result.insertId;
+    }
+
+    // Generate Key
+    const apiKey = "sk_live_" + crypto.randomBytes(32).toString("hex");
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 30); 
+
+    // Insert Key
     await dbPool.query(
-      "INSERT INTO issued_keys (api_key, service_name) VALUES (?, ?)",
-      [key, serviceName]
+      "INSERT INTO api_keys (user_id, api_key, status, start_date, end_date) VALUES (?, ?, 'active', ?, ?)",
+      [userId, apiKey, startDate, endDate]
     );
 
-    console.log(`Key berhasil disimpan ke DB.`);
+    console.log(`API Key berhasil dibuat: ${apiKey}`);
+    res.json({ apiKey: apiKey });
 
-    res.json({ apiKey: key });
   } catch (error) {
     console.error("Error saat membuat key:", error);
-    if (error.code === "ER_DUP_ENTRY") {
-      return res.status(500).json({
-        error: "Terjadi duplikasi key. Coba buat lagi.",
-      });
-    }
-    res.status(500).json({ error: "Gagal memproses permintaan" });
+    res.status(500).json({ error: "Gagal memproses permintaan database" });
   }
 });
 
@@ -69,37 +83,73 @@ app.post("/check", async (req, res) => {
   try {
     const { apikey } = req.body;
     if (!apikey) {
-      return res.status(400).json({
-        status: "error",
-        message: "API key tidak ada atau tidak valid",
-      });
+      return res.status(400).json({ status: "error", message: "API key wajib diisi" });
     }
 
-    console.log(`Mengecek key: ${apikey}`);
+    const query = `
+      SELECT k.*, u.email, u.first_name 
+      FROM api_keys k 
+      JOIN users u ON k.user_id = u.id 
+      WHERE k.api_key = ?
+    `;
 
-    // Menggunakan dbPool
-    const [rows] = await dbPool.query(
-      "SELECT * FROM issued_keys WHERE api_key = ?",
-      [apikey]
-    );
+    const [rows] = await dbPool.query(query, [apikey]);
 
     if (rows.length > 0) {
-      // INI RESPON YANG BENAR DARI KODE BARU
+      const data = rows[0];
+      const now = new Date();
+      const expiredDate = new Date(data.end_date);
+
+      if (data.status !== 'active') {
+        return res.status(403).json({ status: "error", message: "API Key ini sudah tidak aktif (Inactive)." });
+      }
+
+      if (now > expiredDate) {
+        return res.status(403).json({ status: "error", message: "API Key ini sudah kadaluarsa (Expired)." });
+      }
+
       res.json({
         status: "sukses",
-        message: "API key valid dan terdaftar.",
-        service: rows[0].service_name,
-        created: rows[0].created_at,
+        message: "API key valid.",
+        owner: `${data.first_name} (${data.email})`,
+        created_at: data.created_at,
+        expires_at: data.end_date
       });
+
     } else {
-      res.status(404).json({
-        status: "error",
-        message: "API key tidak valid atau tidak ditemukan",
-      });
+      res.status(404).json({ status: "error", message: "API key tidak ditemukan di database." });
     }
+
   } catch (error) {
     console.error("Error saat mengecek key:", error);
     res.status(500).json({ error: "Gagal memproses permintaan" });
+  }
+});
+
+app.get("/admin/keys", async (req, res) => {
+  try {
+    const query = `
+      SELECT api_keys.id, users.first_name, users.email, api_keys.api_key, api_keys.status, api_keys.created_at 
+      FROM api_keys 
+      JOIN users ON api_keys.user_id = users.id
+      ORDER BY api_keys.created_at DESC
+    `;
+    const [rows] = await dbPool.query(query);
+    res.json(rows);
+  } catch (error) {
+    console.error("Gagal ambil data admin:", error);
+    res.status(500).json({ error: "Gagal mengambil data" });
+  }
+});
+
+app.delete("/admin/keys/:id", async (req, res) => {
+  try {
+    const keyId = req.params.id;
+    await dbPool.query("DELETE FROM api_keys WHERE id = ?", [keyId]);
+    res.json({ message: "Key berhasil dihapus" });
+  } catch (error) {
+    console.error("Gagal menghapus key:", error);
+    res.status(500).json({ error: "Gagal menghapus key" });
   }
 });
 
